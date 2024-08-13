@@ -80,7 +80,7 @@ fn block_hash(self: @ChainState, block: @Block, merkle_root: Hash) -> Result<Has
     header_data.append(*header.bits);
     header_data.append(*header.nonce);
 
-    let hashed_header_data = compute_sha256_u32_array(
+    let mut hashed_header_data = compute_sha256_u32_array(
         compute_sha256_u32_array(header_data, 0, 0).span().into(), 0, 0
     );
 
