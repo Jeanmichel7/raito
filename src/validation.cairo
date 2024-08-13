@@ -1,5 +1,6 @@
 use core::traits::Into;
 use core::traits::TryInto;
+use core::sha256::compute_sha256_u32_array;
 
 use super::merkle_tree::merkle_root;
 use super::utils::{shl, shr, Hash};
@@ -70,10 +71,22 @@ impl TransactionValidatorImpl of TransactionValidator {
     }
 }
 
+
 fn block_hash(self: @ChainState, block: @Block, merkle_root: Hash) -> Result<Hash, ByteArray> {
-    // TODO: implement
-    Result::Ok(Default::default())
+    let header = block.header;
+    let mut header_data = ArrayTrait::<u32>::new();
+    header_data.append(*header.version);
+    header_data.append(*header.time);
+    header_data.append(*header.bits);
+    header_data.append(*header.nonce);
+
+    let hashed_header_data = compute_sha256_u32_array(
+        compute_sha256_u32_array(header_data, 0, 0).span().into(), 0, 0
+    );
+
+    Result::Ok((hashed_header_data))
 }
+
 
 fn validate_proof_of_work(target: u256, block_hash: Hash) -> Result<(), ByteArray> {
     if block_hash.into() <= target {
