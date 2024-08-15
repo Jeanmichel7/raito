@@ -1,6 +1,7 @@
 use core::traits::Into;
 use core::traits::TryInto;
 use core::sha256::compute_sha256_u32_array;
+use raito::utils::HashTrait;
 
 use super::merkle_tree::merkle_root;
 use super::utils::{shl, shr, Hash};
@@ -79,12 +80,14 @@ fn block_hash(self: @ChainState, block: @Block, merkle_root: Hash) -> Result<Has
     header_data.append(*header.time);
     header_data.append(*header.bits);
     header_data.append(*header.nonce);
+    header_data.append_span(merkle_root.value.span());
+    header_data.append_span(self.best_block_hash.value.span());
 
     let mut hashed_header_data = compute_sha256_u32_array(
         compute_sha256_u32_array(header_data, 0, 0).span().into(), 0, 0
     );
 
-    Result::Ok((hashed_header_data))
+    Result::Ok(HashTrait::to_hash(hashed_header_data))
 }
 
 
@@ -285,8 +288,25 @@ mod tests {
     use super::{
         validate_timestamp, validate_proof_of_work, compute_block_reward, compute_total_work,
         compute_work_from_target, shr, shl, Block, ChainState, UtreexoState, next_prev_timestamps,
-        TransactionValidatorImpl, validate_coinbase
+        TransactionValidatorImpl, validate_coinbase, block_hash
     };
+
+    #[test]
+    fn test_block_hash() {
+        let mut chain_state = ChainState {
+            block_height: 1,
+            total_work: 1,
+            best_block_hash: 1_u256.into(),
+            current_target: 1,
+            epoch_start_time: 1,
+            prev_timestamps: array![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].span(),
+            utreexo_state: UtreexoState { roots: array![].span() },
+        };
+        let mut block = Block {
+            header: Header { version: 1, time: 12, nonce: 1, bits: 1 },
+            txs: ArrayTrait::new().span(),
+        };
+    }
 
     #[test]
     fn test_validate_timestamp() {
