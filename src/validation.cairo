@@ -284,7 +284,7 @@ fn compute_block_reward(block_height: u32) -> u64 {
 #[cfg(test)]
 mod tests {
     use raito::state::{Header, Transaction, TxIn, TxOut, OutPoint};
-    use raito::utils::from_base16;
+    use raito::test_utils::from_hex;
     use super::{
         validate_timestamp, validate_proof_of_work, compute_block_reward, compute_total_work,
         compute_work_from_target, shr, shl, Block, ChainState, UtreexoState, next_prev_timestamps,
@@ -346,7 +346,7 @@ mod tests {
             is_segwit: false,
             inputs: array![
                 TxIn {
-                    script: from_base16(
+                    script: @from_hex(
                         "01091d8d76a82122082246acbb6cc51c839d9012ddaca46048de07ca8eec221518200241cdb85fab4815c6c624d6e932774f3fdf5fa2a1d3a1614951afb83269e1454e2002443047"
                     ),
                     sequence: 0xffffffff,
@@ -357,14 +357,14 @@ mod tests {
                         txo_index: 0,
                         amount: 100
                     },
-                    witness: from_base16("")
+                    witness: @from_hex("")
                 }
             ]
                 .span(),
             outputs: array![
                 TxOut {
                     value: 90,
-                    pk_script: from_base16(
+                    pk_script: @from_hex(
                         "ac4cd86c7e4f702ac7d5debaf126068a3b30b7c1212c145fdfa754f59773b3aae71484a22f30718d37cd74f325229b15f7a2996bf0075f90131bf5c509fe621aae0441"
                     ),
                 }
@@ -524,7 +524,7 @@ mod tests {
                     is_segwit: false,
                     inputs: array![
                         TxIn {
-                            script: from_base16(""),
+                            script: @from_hex(""),
                             sequence: 4294967295,
                             previous_output: OutPoint {
                                 txid: 0_u256.into(),
@@ -532,10 +532,10 @@ mod tests {
                                 txo_index: 0,
                                 amount: 0_64
                             },
-                            witness: from_base16("0")
+                            witness: @from_hex("")
                         },
                         TxIn {
-                            script: from_base16(""),
+                            script: @from_hex(""),
                             sequence: 4294967295,
                             previous_output: OutPoint {
                                 txid: 0_u256.into(),
@@ -543,11 +543,11 @@ mod tests {
                                 txo_index: 0,
                                 amount: 0_64
                             },
-                            witness: from_base16("0")
+                            witness: @from_hex("")
                         }
                     ]
                         .span(),
-                    outputs: array![TxOut { value: 5000000000_u64, pk_script: from_base16(""), }]
+                    outputs: array![TxOut { value: 5000000000_u64, pk_script: @from_hex(""), }]
                         .span(),
                     lock_time: 0
                 }
@@ -571,16 +571,16 @@ mod tests {
                     is_segwit: false,
                     inputs: array![
                         TxIn {
-                            script: from_base16(""),
+                            script: @from_hex(""),
                             sequence: 4294967295,
                             previous_output: OutPoint {
                                 txid: 0_u256.into(), vout: 0x1_u32, txo_index: 0, amount: 0_64
                             },
-                            witness: from_base16("0")
+                            witness: @from_hex("")
                         }
                     ]
                         .span(),
-                    outputs: array![TxOut { value: 5000000000_u64, pk_script: from_base16(""), }]
+                    outputs: array![TxOut { value: 5000000000_u64, pk_script: @from_hex(""), }]
                         .span(),
                     lock_time: 0
                 }
@@ -604,7 +604,7 @@ mod tests {
                     is_segwit: false,
                     inputs: array![
                         TxIn {
-                            script: from_base16(""),
+                            script: @from_hex(""),
                             sequence: 4294967295,
                             previous_output: OutPoint {
                                 txid: 0x2_u256.into(),
@@ -612,11 +612,11 @@ mod tests {
                                 txo_index: 0,
                                 amount: 0_64
                             },
-                            witness: from_base16("0")
+                            witness: @from_hex("")
                         }
                     ]
                         .span(),
-                    outputs: array![TxOut { value: 5000000000_u64, pk_script: from_base16(""), }]
+                    outputs: array![TxOut { value: 5000000000_u64, pk_script: @from_hex(""), }]
                         .span(),
                     lock_time: 0
                 }
@@ -639,7 +639,7 @@ mod tests {
                     is_segwit: false,
                     inputs: array![
                         TxIn {
-                            script: from_base16(""),
+                            script: @from_hex(""),
                             sequence: 4294967295,
                             previous_output: OutPoint {
                                 txid: 0_u256.into(),
@@ -647,11 +647,11 @@ mod tests {
                                 txo_index: 0,
                                 amount: 0_64
                             },
-                            witness: from_base16("0")
+                            witness: @from_hex("")
                         }
                     ]
                         .span(),
-                    outputs: array![TxOut { value: 5000000000_u64, pk_script: from_base16(""), }]
+                    outputs: array![TxOut { value: 5000000000_u64, pk_script: @from_hex(""), }]
                         .span(),
                     lock_time: 0
                 }
@@ -675,7 +675,7 @@ mod tests {
                     is_segwit: false,
                     inputs: array![
                         TxIn {
-                            script: from_base16(""),
+                            script: @from_hex(""),
                             sequence: 4294967295,
                             previous_output: OutPoint {
                                 txid: 0_u256.into(),
@@ -683,11 +683,11 @@ mod tests {
                                 txo_index: 0,
                                 amount: 0_64
                             },
-                            witness: from_base16("0")
+                            witness: @from_hex("")
                         }
                     ]
                         .span(),
-                    outputs: array![TxOut { value: 5000000000_u64, pk_script: from_base16(""), }]
+                    outputs: array![TxOut { value: 5000000000_u64, pk_script: @from_hex(""), }]
                         .span(),
                     lock_time: 0
                 }
