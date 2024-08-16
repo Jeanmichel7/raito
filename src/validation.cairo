@@ -285,6 +285,7 @@ fn compute_block_reward(block_height: u32) -> u64 {
 mod tests {
     use raito::state::{Header, Transaction, TxIn, TxOut, OutPoint};
     use raito::test_utils::from_hex;
+    use raito::merkle_tree::merkle_root;
     use super::{
         validate_timestamp, validate_proof_of_work, compute_block_reward, compute_total_work,
         compute_work_from_target, shr, shl, Block, ChainState, UtreexoState, next_prev_timestamps,
@@ -306,6 +307,17 @@ mod tests {
             header: Header { version: 1, time: 12, nonce: 1, bits: 1 },
             txs: ArrayTrait::new().span(),
         };
+
+        let mut txids: Array<Hash> = array![
+            0xacd9825be8bece7782ec746a80b52f44d6a8af41c63dbab59b03e29558469682_u256.into(),
+        ];
+        let merkle_root = merkle_root(ref txids);
+
+        let block_hash_expected = 0;
+
+        let block_hash_result = block_hash(@chain_state, @block, merkle_root);
+
+        assert_eq!(block_hash_result, block_hash_expected);
     }
 
     #[test]

@@ -64,12 +64,17 @@ def block:
 ;
 
 def fixture:
-"use raito::state::{Block, Header, Transaction, OutPoint, TxIn, TxOut};
+"use raito::state::{Block, Header, Transaction, OutPoint, TxIn, TxOut, ChainState, UtreexoState};
 use raito::test_utils::from_hex;
 
 pub fn block_\(.height)() -> Block {
     // block hash: \(.hash)
      \( . | block )
+}"
+
+pub fn chain_state_for_block_\(.height)() -> ChainState {
+    // State for block \(.height - 1)
+    \( . | chain_state )
 }"
 ;
 
