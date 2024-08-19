@@ -338,19 +338,19 @@ fn compute_block_reward(block_height: u32) -> u64 {
 #[cfg(test)]
 mod tests {
     use raito::state::{Header, Transaction, TxIn, TxOut, OutPoint};
-    use raito::utils::Hash;
+    use raito::utils::{Hash, HashTrait};
     use raito::test_utils::from_hex;
     use raito::merkle_tree::merkle_root;
     use super::{
         validate_timestamp, validate_proof_of_work, compute_block_reward, compute_total_work,
         compute_work_from_target, shr, shl, Block, ChainState, UtreexoState, next_prev_timestamps,
-        TransactionValidatorImpl, validate_coinbase, bits_to_target, target_to_bits
+        TransactionValidatorImpl, validate_coinbase, bits_to_target, target_to_bits, block_hash
     };
 
     #[test]
     fn test_block_hash() {
         let mut chain_state = ChainState {
-            block_height: 1,
+            block_height: Option::Some(1),
             total_work: 1,
             best_block_hash: 1_u256.into(),
             current_target: 1,
@@ -368,9 +368,25 @@ mod tests {
         ];
         let merkle_root = merkle_root(ref txids);
 
-        let block_hash_expected = 0;
+        println!("MERKLE: {:?}", merkle_root);
 
-        let block_hash_result = block_hash(@chain_state, @block, merkle_root);
+        let block_hash_result = block_hash(@chain_state, @block, merkle_root).unwrap();
+
+        // let block_hash_expected =
+        // 424a5fa890afa8f6b4f06fd7761d643628b8fccc2631de5cb240ca08babaaee5;
+
+        let block_hash_expected = HashTrait::to_hash(
+            [
+                0xc501e41f,
+                0x997d9954,
+                0xa6e74983,
+                0x344af828,
+                0x930dff62,
+                0x5c13d406,
+                0x5e6e9869,
+                0x0e84e7e4
+            ]
+        );
 
         assert_eq!(block_hash_result, block_hash_expected);
     }
@@ -387,7 +403,7 @@ mod tests {
             utreexo_state: UtreexoState { roots: array![].span() },
         };
         let mut block = Block {
-            header: Header { version: 1, time: 12, nonce: 1, bits: 1 },
+            header: Header { version: 1, time: 12, nonce: 1, bits: 4 },
             txs: ArrayTrait::new().span(),
         };
 
