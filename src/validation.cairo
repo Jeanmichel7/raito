@@ -130,11 +130,11 @@ fn block_hash(self: @ChainState, block: @Block, merkle_root: Hash) -> Result<Has
     let header = block.header;
     let mut header_data = ArrayTrait::<u32>::new();
     header_data.append(*header.version);
+    header_data.append_span(self.best_block_hash.value.span());
+    header_data.append_span(merkle_root.value.span());
     header_data.append(*header.time);
     header_data.append(*header.bits);
     header_data.append(*header.nonce);
-    header_data.append_span(merkle_root.value.span());
-    header_data.append_span(self.best_block_hash.value.span());
 
     let mut hashed_header_data = compute_sha256_u32_array(
         compute_sha256_u32_array(header_data, 0, 0).span().into(), 0, 0
@@ -353,43 +353,38 @@ mod tests {
         let mut chain_state = ChainState {
             block_height: Option::Some(1),
             total_work: 1,
-            best_block_hash: 1_u256.into(),
+            best_block_hash: 458038796145736896471466136009021319596652506364792505_u256.into(),
             current_target: 1,
             epoch_start_time: 1,
             prev_timestamps: array![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].span(),
-            utreexo_state: UtreexoState { roots: array![].span() },
+            utreexo_state: Default::default(),
         };
         let mut block = Block {
-            header: Header { version: 1, time: 12, nonce: 1, bits: 1 },
+            header: Header {
+                version: 805298176, time: 1612102021, nonce: 766687480, bits: 386761815
+            },
             txs: ArrayTrait::new().span(),
         };
 
-        let mut txids: Array<Hash> = array![
-            0xacd9825be8bece7782ec746a80b52f44d6a8af41c63dbab59b03e29558469682_u256.into(),
-        ];
-        let merkle_root = merkle_root(ref txids);
-
-        println!("MERKLE: {:?}", merkle_root);
-
-        let block_hash_result = block_hash(@chain_state, @block, merkle_root).unwrap();
-
-        // let block_hash_expected =
-        // 424a5fa890afa8f6b4f06fd7761d643628b8fccc2631de5cb240ca08babaaee5;
-
-        let block_hash_expected = HashTrait::to_hash(
+        let merkle_root = HashTrait::to_hash(
             [
-                0xc501e41f,
-                0x997d9954,
-                0xa6e74983,
-                0x344af828,
-                0x930dff62,
-                0x5c13d406,
-                0x5e6e9869,
-                0x0e84e7e4
+                0x84f762ec,
+                0xaf00a8fd,
+                0x67f8a79b,
+                0xa9649932,
+                0x1606d439,
+                0x685474aa,
+                0x70df3af0,
+                0x22cc6e01
             ]
         );
 
-        assert_eq!(block_hash_result, block_hash_expected);
+        let block_hash_result = block_hash(@chain_state, @block, merkle_root).unwrap();
+
+        assert_eq!(
+            from_hex("beaf290914f75b5b2610d1aaa4a92a52654b3a49dcfb0c000000000000000000"),
+            block_hash_result.into()
+        );
     }
 
     #[test]

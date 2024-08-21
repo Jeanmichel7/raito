@@ -90,5 +90,6 @@ pub fn block_\(.height)() -> Block {
     // block hash: \(.hash)
      \( . | block )
 }"
+;
 
 .result | fixture
