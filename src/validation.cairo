@@ -127,19 +127,22 @@ pub impl TransactionValidatorImpl of TransactionValidator {
 
 fn block_hash(self: @ChainState, block: @Block, merkle_root: Hash) -> Result<Hash, ByteArray> {
     let header = block.header;
-    let mut header_data = ArrayTrait::<u32>::new();
-    header_data.append(*header.version);
-    header_data.append_span(self.best_block_hash.value.span());
-    header_data.append_span(merkle_root.value.span());
-    header_data.append(*header.time);
-    header_data.append(*header.bits);
-    header_data.append(*header.nonce);
 
-    let mut hashed_header_data = compute_sha256_u32_array(
-        compute_sha256_u32_array(header_data, 0, 0).span().into(), 0, 0
-    );
+    let mut header_data_bytes: ByteArray = Default::default();
+    header_data_bytes.append_word_rev((*header.version).into(), 4);
 
-    Result::Err("")
+    let best_block_hash: ByteArray = (*self.best_block_hash).into();
+    header_data_bytes.append(@best_block_hash.rev());
+
+    let merkle_root: ByteArray = merkle_root.into();
+    header_data_bytes.append(@merkle_root.rev());
+
+    header_data_bytes.append_word_rev((*header.time).into(), 4);
+    header_data_bytes.append_word_rev((*header.bits).into(), 4);
+    header_data_bytes.append_word_rev((*header.nonce).into(), 4);
+
+    let hashed_header_bytes = double_sha256_byte_array(@header_data_bytes);
+    Result::Ok(hashed_header_bytes)
 }
 
 
@@ -348,41 +351,30 @@ mod tests {
 
     #[test]
     fn test_block_hash() {
-        let mut chain_state = ChainState {
-            block_height: Option::Some(1),
-            total_work: 1,
-            best_block_hash: 458038796145736896471466136009021319596652506364792505_u256.into(),
-            current_target: 1,
-            epoch_start_time: 1,
-            prev_timestamps: array![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].span(),
-            utreexo_state: Default::default(),
-        };
-        let mut block = Block {
+        let mut chain_state: ChainState = Default::default();
+        chain_state
+            .best_block_hash =
+                0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55_u256
+            .into();
+        // block 170
+        let block = Block {
             header: Header {
-                version: 805298176, time: 1612102021, nonce: 766687480, bits: 386761815
+                version: 1_u32, time: 1231731025_u32, bits: 0x1d00ffff_u32, nonce: 1889418792_u32
             },
             txs: ArrayTrait::new().span(),
         };
+        let merkle_root: Hash =
+            0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff_u256
+            .into();
 
-        let merkle_root = HashTrait::to_hash(
-            [
-                0x84f762ec,
-                0xaf00a8fd,
-                0x67f8a79b,
-                0xa9649932,
-                0x1606d439,
-                0x685474aa,
-                0x70df3af0,
-                0x22cc6e01
-            ]
-        );
+        let block_hash_result: Hash = block_hash(@chain_state, @block, merkle_root).unwrap();
 
-        let block_hash_result = block_hash(@chain_state, @block, merkle_root).unwrap();
+        //0x00000000d1145790a8694403d4063f323d499e655c83426834d4ce2f8dd4a2ee
+        let expected_block_hash: Hash =
+            0xeea2d48d2fced4346842835c659e493d323f06d4034469a8905714d100000000_u256
+            .into();
 
-        assert_eq!(
-            from_hex("beaf290914f75b5b2610d1aaa4a92a52654b3a49dcfb0c000000000000000000"),
-            block_hash_result.into()
-        );
+        assert_eq!(expected_block_hash, block_hash_result);
     }
 
     #[test]
