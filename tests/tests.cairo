@@ -49,6 +49,7 @@ fn test_block170() {
         // program_hash: 71842f64de1268cdd1669c87640845003a9f15787bbcaf8eb371f6762f93eec
     };
 
+    println!("block 170!");
     let next_chain_state = BlockValidatorImpl::validate_and_apply(
         prev_chain_state_block169, block170
     );

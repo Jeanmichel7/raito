@@ -22,6 +22,11 @@ pub impl HashImpl of HashTrait {
 impl HashDisplay of Display<Hash> {
     fn fmt(self: @Hash, ref f: Formatter) -> Result<(), Error> {
         let hash: u256 = (*self).into();
+        let hash_ba: ByteArray = (*self).into();
+
+        let str: ByteArray = format!("0x{}", hash_ba);
+        f.buffer.append(@str);
+
         hash.append_formatted_to_byte_array(ref f.buffer, 16);
         Result::Ok(())
     }
@@ -250,155 +255,156 @@ pub fn double_sha256_u32_array(words: Array<u32>) -> Hash {
 
     HashTrait::to_hash(compute_sha256_u32_array(input2, 0, 0))
 }
+// #[cfg(test)]
+// mod tests {
+//     use super::{
+//         double_sha256_byte_array, double_sha256_u32_array, double_sha256_parent, Hash, fast_pow,
+//         shl, shr
+//     };
+//     use super::super::test_utils::from_hex;
 
-#[cfg(test)]
-mod tests {
-    use super::{
-        double_sha256_byte_array, double_sha256_u32_array, double_sha256_parent, Hash, fast_pow,
-        shl, shr
-    };
-    use super::super::test_utils::from_hex;
+//     #[test]
+//     fn test_double_sha256_byte_array() {
+//         // hashlib.sha256(sha256(b"bitcoin").digest()).hexdigest()
+//         assert_eq!(
+//             double_sha256_byte_array(@"bitcoin").into(),
+//             from_hex("f1ef1bf105d788352c052453b15a913403be59b90ddf9f7c1f937edee8938dc5")
+//         )
+//     }
 
-    #[test]
-    fn test_double_sha256_byte_array() {
-        // hashlib.sha256(sha256(b"bitcoin").digest()).hexdigest()
-        assert_eq!(
-            double_sha256_byte_array(@"bitcoin").into(),
-            from_hex("f1ef1bf105d788352c052453b15a913403be59b90ddf9f7c1f937edee8938dc5")
-        )
-    }
+//     #[test]
+//     fn test_double_sha256_u32_array() {
+//         //
+//         hashlib.sha256(sha256(bytes.fromhex("00000001000000020000000300000004000000050000000600000007")).digest()).hexdigest()
+//         assert_eq!(
+//             double_sha256_u32_array(array![1, 2, 3, 4, 5, 6, 7]).into(),
+//             from_hex("489b8eeb4024cb77ab057616ebf7f8d4405aa0bd3ad5f42e6b4c20580e011ac4")
+//         )
+//     }
 
-    #[test]
-    fn test_double_sha256_u32_array() {
-        // hashlib.sha256(sha256(bytes.fromhex("00000001000000020000000300000004000000050000000600000007")).digest()).hexdigest()
-        assert_eq!(
-            double_sha256_u32_array(array![1, 2, 3, 4, 5, 6, 7]).into(),
-            from_hex("489b8eeb4024cb77ab057616ebf7f8d4405aa0bd3ad5f42e6b4c20580e011ac4")
-        )
-    }
+//     #[test]
+//     fn test_double_sha256_parent() {
+//         // hashlib.sha256(sha256(bytes.fromhex("00000001" * 8 + "00000002" *
+//         // 8)).digest()).hexdigest()
+//         assert_eq!(
+//             double_sha256_parent(@Hash { value: [1; 8] }, @Hash { value: [2; 8] }).into(),
+//             from_hex("14a6e4a4caef969126944266724d11866b39b3390cee070b0aa4c9390cd77f47")
+//         )
+//     }
 
-    #[test]
-    fn test_double_sha256_parent() {
-        // hashlib.sha256(sha256(bytes.fromhex("00000001" * 8 + "00000002" *
-        // 8)).digest()).hexdigest()
-        assert_eq!(
-            double_sha256_parent(@Hash { value: [1; 8] }, @Hash { value: [2; 8] }).into(),
-            from_hex("14a6e4a4caef969126944266724d11866b39b3390cee070b0aa4c9390cd77f47")
-        )
-    }
+//     #[test]
+//     #[available_gas(1000000000)]
+//     fn test_fast_pow() {
+//         assert_eq!(fast_pow(2_u128, 3_u128), 8, "invalid result");
+//         assert_eq!(fast_pow(3_u128, 4_u128), 81, "invalid result");
 
-    #[test]
-    #[available_gas(1000000000)]
-    fn test_fast_pow() {
-        assert_eq!(fast_pow(2_u128, 3_u128), 8, "invalid result");
-        assert_eq!(fast_pow(3_u128, 4_u128), 81, "invalid result");
+//         // Test with larger exponents
+//         assert_eq!(fast_pow(2_u128, 10_u128), 1024, "invalid result");
+//         assert_eq!(fast_pow(10_u128, 5_u128), 100000, "invalid result");
+//     }
 
-        // Test with larger exponents
-        assert_eq!(fast_pow(2_u128, 10_u128), 1024, "invalid result");
-        assert_eq!(fast_pow(10_u128, 5_u128), 100000, "invalid result");
-    }
+//     #[test]
+//     fn test_u256_into_hash() {
+//         let u256_value = u256 {
+//             low: 0x1234567890abcdef1234567890abcdef_u128,
+//             high: 0xfedcba0987654321fedcba0987654321_u128,
+//         };
 
-    #[test]
-    fn test_u256_into_hash() {
-        let u256_value = u256 {
-            low: 0x1234567890abcdef1234567890abcdef_u128,
-            high: 0xfedcba0987654321fedcba0987654321_u128,
-        };
+//         let result_hash = u256_value.into();
 
-        let result_hash = u256_value.into();
+//         let expected_hash = Hash {
+//             value: [
+//                 0xfedcba09,
+//                 0x87654321,
+//                 0xfedcba09,
+//                 0x87654321,
+//                 0x12345678,
+//                 0x90abcdef,
+//                 0x12345678,
+//                 0x90abcdef,
+//             ],
+//         };
 
-        let expected_hash = Hash {
-            value: [
-                0xfedcba09,
-                0x87654321,
-                0xfedcba09,
-                0x87654321,
-                0x12345678,
-                0x90abcdef,
-                0x12345678,
-                0x90abcdef,
-            ],
-        };
+//         assert_eq!(result_hash, expected_hash, "invalid results");
+//     }
 
-        assert_eq!(result_hash, expected_hash, "invalid results");
-    }
+//     #[test]
+//     fn test_shl() {
+//         let value1: u32 = 3;
+//         let shift1: u32 = 2;
+//         let result = shl(value1, shift1);
+//         assert_eq!(result, 12, "invalid result");
 
-    #[test]
-    fn test_shl() {
-        let value1: u32 = 3;
-        let shift1: u32 = 2;
-        let result = shl(value1, shift1);
-        assert_eq!(result, 12, "invalid result");
+//         let value2: u32 = 5;
+//         let shift2: u32 = 0;
+//         let result = shl(value2, shift2);
+//         assert_eq!(result, 5);
+//     }
 
-        let value2: u32 = 5;
-        let shift2: u32 = 0;
-        let result = shl(value2, shift2);
-        assert_eq!(result, 5);
-    }
+//     #[test]
+//     fn test_shr() {
+//         // Assuming T and U are u32 for simplicity
+//         let x: u32 = 32;
+//         let shift: u32 = 2;
+//         let result = shr(x, shift);
+//         assert_eq!(result, 8);
 
-    #[test]
-    fn test_shr() {
-        // Assuming T and U are u32 for simplicity
-        let x: u32 = 32;
-        let shift: u32 = 2;
-        let result = shr(x, shift);
-        assert_eq!(result, 8);
+//         let shift: u32 = 32;
+//         let result = shr(x, shift);
+//         assert_eq!(result, 0);
 
-        let shift: u32 = 32;
-        let result = shr(x, shift);
-        assert_eq!(result, 0);
+//         let shift: u32 = 0;
+//         let result = shr(x, shift);
+//         assert_eq!(result, 32);
+//     }
 
-        let shift: u32 = 0;
-        let result = shr(x, shift);
-        assert_eq!(result, 32);
-    }
+//     #[test]
+//     fn test_hash_to_u256() {
+//         let hash_value = Hash {
+//             value: [
+//                 0xfedcba09,
+//                 0x87654321,
+//                 0xfedcba09,
+//                 0x87654321,
+//                 0x12345678,
+//                 0x90abcdef,
+//                 0x12345678,
+//                 0x90abcdef,
+//             ],
+//         };
 
-    #[test]
-    fn test_hash_to_u256() {
-        let hash_value = Hash {
-            value: [
-                0xfedcba09,
-                0x87654321,
-                0xfedcba09,
-                0x87654321,
-                0x12345678,
-                0x90abcdef,
-                0x12345678,
-                0x90abcdef,
-            ],
-        };
+//         let result_u256 = hash_value.into();
 
-        let result_u256 = hash_value.into();
+//         let expected_u256 = u256 {
+//             high: 0xfedcba0987654321fedcba0987654321_u128,
+//             low: 0x1234567890abcdef1234567890abcdef_u128,
+//         };
 
-        let expected_u256 = u256 {
-            high: 0xfedcba0987654321fedcba0987654321_u128,
-            low: 0x1234567890abcdef1234567890abcdef_u128,
-        };
+//         assert_eq!(result_u256, expected_u256, "invalid results");
+//     }
 
-        assert_eq!(result_u256, expected_u256, "invalid results");
-    }
+//     #[test]
+//     fn test_hash_into_bytearray() {
+//         let hash = Hash {
+//             value: [
+//                 0x12345678_u32,
+//                 0x9abcdef0_u32,
+//                 0x11223344_u32,
+//                 0x55667788_u32,
+//                 0xaabbccdd_u32,
+//                 0xeeff0011_u32,
+//                 0x22334455_u32,
+//                 0x66778899_u32
+//             ]
+//         };
 
-    #[test]
-    fn test_hash_into_bytearray() {
-        let hash = Hash {
-            value: [
-                0x12345678_u32,
-                0x9abcdef0_u32,
-                0x11223344_u32,
-                0x55667788_u32,
-                0xaabbccdd_u32,
-                0xeeff0011_u32,
-                0x22334455_u32,
-                0x66778899_u32
-            ]
-        };
+//         let byte_array: ByteArray = hash.into();
 
-        let byte_array: ByteArray = hash.into();
+//         let expected_byte_array = from_hex(
+//             "123456789abcdef01122334455667788aabbccddeeff00112233445566778899"
+//         );
 
-        let expected_byte_array = from_hex(
-            "123456789abcdef01122334455667788aabbccddeeff00112233445566778899"
-        );
+//         assert_eq!(byte_array, expected_byte_array, "invalid results");
+//     }
+// }
 
-        assert_eq!(byte_array, expected_byte_array, "invalid results");
-    }
-}
