@@ -250,7 +250,6 @@ pub fn double_sha256_u32_array(words: Array<u32>) -> Hash {
 
     HashTrait::to_hash(compute_sha256_u32_array(input2, 0, 0))
 }
-
 // #[cfg(test)]
 // mod tests {
 //     use super::{
@@ -270,7 +269,8 @@ pub fn double_sha256_u32_array(words: Array<u32>) -> Hash {
 
 //     #[test]
 //     fn test_double_sha256_u32_array() {
-//         // hashlib.sha256(sha256(bytes.fromhex("00000001000000020000000300000004000000050000000600000007")).digest()).hexdigest()
+//         //
+//         hashlib.sha256(sha256(bytes.fromhex("00000001000000020000000300000004000000050000000600000007")).digest()).hexdigest()
 //         assert_eq!(
 //             double_sha256_u32_array(array![1, 2, 3, 4, 5, 6, 7]).into(),
 //             from_hex("489b8eeb4024cb77ab057616ebf7f8d4405aa0bd3ad5f42e6b4c20580e011ac4")
@@ -402,3 +402,4 @@ pub fn double_sha256_u32_array(words: Array<u32>) -> Hash {
 //         assert_eq!(byte_array, expected_byte_array, "invalid results");
 //     }
 // }
+
