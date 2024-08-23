@@ -1,3 +1,3 @@
-// mod blocks;
-// mod tests;
+mod blocks;
+mod tests;
 

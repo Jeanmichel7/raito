@@ -64,10 +64,10 @@ pub impl TransactionValidatorImpl of TransactionValidator {
         let mut inputs: Span<TxIn> = *self.inputs;
         while let Option::Some(txin) = inputs.pop_front() {
             // append txid (32 bytes)
-            let txid: ByteArray = (*(txin.previous_output.txid)).into();
-            // hash256_input.append_word_rev(txid.low.into(), 16);
-            // hash256_input.append_word_rev(txid.high.into(), 16);
-            hash256_input.append(@txid.rev());
+            let txid: u256 = (*(txin.previous_output.txid)).into();
+            hash256_input.append_word_rev(txid.low.into(), 16);
+            hash256_input.append_word_rev(txid.high.into(), 16);
+            // hash256_input.append(@txid.rev());
             println!("txid: {}", txid);
 
             // append VOUT (4 bytes)
@@ -148,21 +148,21 @@ pub impl TransactionValidatorImpl of TransactionValidator {
 fn block_hash(self: @ChainState, block: @Block, merkle_root: Hash) -> Result<Hash, ByteArray> {
     let header = block.header;
 
-    println!("version: {}", header.version);
-    println!("best_block_hash: {}", self.best_block_hash);
-    println!("merkle root: {}", merkle_root);
-    println!("time:  {}", header.time);
-    println!("bits:  {}", header.bits);
-    println!("nonce: {}", header.nonce);
+    println!("block_hash : version: {}", header.version);
+    println!("block_hash : best_block_hash: {}", self.best_block_hash);
+    println!("block_hash : merkle root: {}", merkle_root);
+    println!("block_hash : time:  {}", header.time);
+    println!("block_hash : bits:  {}", header.bits);
+    println!("block_hash : nonce: {}", header.nonce);
 
     let mut header_data_bytes: ByteArray = Default::default();
     header_data_bytes.append_word_rev((*header.version).into(), 4);
 
     let best_block_hash: ByteArray = (*self.best_block_hash).into();
-    header_data_bytes.append(@best_block_hash.rev());
+    header_data_bytes.append(@best_block_hash);
 
     let merkle_root: ByteArray = merkle_root.into();
-    header_data_bytes.append(@merkle_root.rev());
+    header_data_bytes.append(@merkle_root);
 
     header_data_bytes.append_word_rev((*header.time).into(), 4);
     header_data_bytes.append_word_rev((*header.bits).into(), 4);
@@ -175,11 +175,14 @@ fn block_hash(self: @ChainState, block: @Block, merkle_root: Hash) -> Result<Has
 
 fn validate_proof_of_work(target: u256, block_hash: Hash) -> Result<(), ByteArray> {
     println!("target: {target}");
-    let block_hash_u256: u256 = block_hash.into();
-    println!("block_hash: {block_hash_u256}");
-    let block_hash_rev: u256 = HashTrait::into_u256_natural_order(block_hash);
-    println!("block_hash_rev: {block_hash_rev}");
-    if HashTrait::into_u256_natural_order(block_hash) <= target {
+    println!("block_hash: {block_hash}");
+    // let block_hash_u256: u256 = block_hash.into();
+    // println!("block_hash: {block_hash_u256}");
+    // let block_hash_rev: u256 = HashTrait::into_u256_natural_order(block_hash);
+    // println!("block_hash_rev: {block_hash_rev}");
+
+    // if HashTrait::into_u256_natural_order(block_hash) <= target {
+    if block_hash.into() <= target {
         Result::Ok(())
     } else {
         Result::Err(
@@ -391,7 +394,8 @@ mod tests {
         let mut chain_state: ChainState = Default::default();
         chain_state
             .best_block_hash =
-                0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55_u256
+                0x55bd840a78798ad0da853f68974f3d183e2bd1db6a842c1feecf222a00000000_u256
+            // 0x000000002a22cfee1f2c846adbd12b3e183d4f97683f85dad08a79780a84bd55_u256
             .into();
         // block 170
         let block = Block {
@@ -401,7 +405,8 @@ mod tests {
             txs: ArrayTrait::new().span(),
         };
         let merkle_root: Hash =
-            0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff_u256
+            // 0x7dac2c5666815c17a3b36427de37bb9d2e2c5ccec3f8633eb91a4205cb4c10ff_u256
+            0xff104ccb05421ab93e63f8c3ce5c2c2e9dbb37de2764b3a3175c8166562cac7d_u256
             .into();
 
         let block_hash_result: Hash = block_hash(@chain_state, @block, merkle_root).unwrap();
@@ -1092,6 +1097,8 @@ mod tests {
         let txid: Hash = TransactionValidatorImpl::txid(@tx);
         assert_eq!(
             txid, 0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b_u256.into()
+            // 0x3ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a_u256.into()
+
         );
     }
 
