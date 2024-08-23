@@ -17,6 +17,25 @@ pub impl HashImpl of HashTrait {
     fn new(array: [u32; 8]) -> Hash {
         Hash { value: array }
     }
+    fn into_u256_natural_order(self: Hash) -> u256 {
+        let [a, b, c, d, e, f, g, h] = self.value;
+
+        println!("a: {a}, b: {b}, c: {c}, d: {d}, e: {e}, f: {f}, g: {g}, h: {h}");
+        let mut low: u128 = 0;
+        let mut high: u128 = 0;
+
+        high += (a.into());
+        high += shl((b.into()), 32_u32);
+        high += shl((c.into()), 64_u32);
+        high += shl((d.into()), 96_u32);
+
+        low += (e.into());
+        low += shl((f.into()), 32_u32);
+        low += shl((g.into()), 64_u32);
+        low += shl((h.into()), 96_u32);
+
+        u256 { low, high }
+    }
 }
 
 /// Formats a `Hash` value for display.

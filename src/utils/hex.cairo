@@ -18,6 +18,23 @@ pub fn from_hex(hex_string: ByteArray) -> ByteArray {
     bytes
 }
 
+pub fn from_hex_rev(hex_string: ByteArray) -> ByteArray {
+    let num_characters = hex_string.len();
+    assert!(num_characters & 1 == 0, "Invalid hex string length");
+
+    let mut bytes: ByteArray = Default::default();
+    let mut i = num_characters - 2;
+
+    while i >= 0 {
+        let hi = hex_char_to_nibble(hex_string[i]);
+        let lo = hex_char_to_nibble(hex_string[i + 1]);
+        bytes.append_byte(hi * 16 + lo);
+        i -= 2;
+    };
+
+    bytes
+}
+
 fn hex_char_to_nibble(hex_char: u8) -> u8 {
     if hex_char >= 48 && hex_char <= 57 {
         // 0-9
