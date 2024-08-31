@@ -42,6 +42,12 @@ pub impl EncodeByteArrayImpl of Encode<@ByteArray> {
     }
 }
 
+pub impl EncodeU8 of Encode<u8> {
+    fn encode_to(self: u8, ref dest: ByteArray) {
+        dest.append_byte(self);
+    }
+}
+
 pub impl EncodeU32 of Encode<u32> {
     fn encode_to(self: u32, ref dest: ByteArray) {
         dest.append_word_rev(self.into(), 4);
@@ -84,7 +90,10 @@ pub impl EncodeOutpoint of Encode<OutPoint> {
 
 pub impl EncodeWitness of Encode<Span<ByteArray>> {
     fn encode_to(self: Span<ByteArray>, ref dest: ByteArray) {
+        encode_compact_size(self.len(), ref dest);
+
         for witness in self {
+            encode_compact_size(witness.len(), ref dest);
             dest.append(witness);
         };
     }
@@ -702,12 +711,9 @@ mod tests {
                         block_time: Default::default(),
                     },
                     witness: array![
-                        from_hex("02"),
-                        from_hex("47"),
                         from_hex(
                             "30440220537f470c1a18dc1a9d233c0b6af1d2ce18a07f3b244e4d9d54e0e60c34c55e67022058169cd11ac42374cda217d6e28143abd0e79549f7b84acc6542817466dc9b3001"
                         ),
-                        from_hex("21"),
                         from_hex(
                             "0301c1768b48843933bd7f0e8782716e8439fc44723d3745feefde2d57b761f503"
                         )
