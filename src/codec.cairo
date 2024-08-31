@@ -693,7 +693,7 @@ mod tests {
     }
 
     #[test]
-    fn test_encode_tx_segwit() {
+    fn test_encode_tx_witness() {
         // tx 65d8bd45f01bd6209d8695d126ba6bb4f2936501c12b9a1ddc9e38600d35aaa2
         let tx = Transaction {
             version: 2,
@@ -743,6 +743,73 @@ mod tests {
 
         let expected = from_hex(
             "020000000001013ce63f3c9d1375b3d7fc59516dbe57120fe3c912a31ebc29241897b16215cc390000000000fdffffff020f900100000000001976a914998db5e1126bc3a5e04109fbf253a7900462410e88acd9bd150000000000160014579bf4f06510c8683f2451262b6685b00012e46f024730440220537f470c1a18dc1a9d233c0b6af1d2ce18a07f3b244e4d9d54e0e60c34c55e67022058169cd11ac42374cda217d6e28143abd0e79549f7b84acc6542817466dc9b3001210301c1768b48843933bd7f0e8782716e8439fc44723d3745feefde2d57b761f5033f600a00"
+        );
+        assert_eq!(bytes, expected);
+    }
+
+    #[test]
+    fn test_encode_tx_witness2() {
+        // tx 3c149efe88dae098a7ccc87ba4864d516e0a521bd840e5cc4c44b2c84868b7d6,
+        let tx = Transaction {
+            version: 2,
+            is_segwit: true,
+            lock_time: 0,
+            inputs: array![
+                TxIn {
+                    script: @from_hex(""),
+                    sequence: 4294967293,
+                    witness: array![
+                        from_hex(""),
+                        from_hex(
+                            "3045022100b5da1129b825b9656ce00073d54ccb23bc1a5c5ffacf14cbc5aa05cf88fef07f02200e545c3b144eec86b7f296d216eefddf9cdf9ed5bda3c8e0afa03b2a330dacc301"
+                        ),
+                        from_hex(
+                            "304402202d488b5f90951f372587e4ce66e2369fb2872bc7d6a501ec9d441ef6d58eac5d02203d22d524f5c76cdb2057e1306441f8f7d43a8945326edb327309b03d5632c2d101"
+                        ),
+                        from_hex(
+                            "522102082e5e469ef875ec63bf52b8471e78367e561a23f39c052488c020f7bd933bd82102eb9e7ad083c76bfb6beb504a67a346c2b0b67075758a70d8f7be868fc731ff17210374f3e239bf6a0b988d6bbd1798fa32829ceec30f4d345b4be172190d9e805ece53ae"
+                        )
+                    ]
+                        .span(),
+                    previous_output: OutPoint {
+                        txid: 0x0790f492b6df84396870f107b3a5de666ce0465b60386ad167f9e955bf7cdcba_u256
+                            .into(),
+                        vout: 1_u32,
+                        data: TxOut {
+                            value: 23200675_u64,
+                            pk_script: @from_hex(
+                                "002044709e063fb66d783831a1237a60471d7b2a3de03a41000f4ed9e1d1afa15904"
+                            ),
+                            cached: false,
+                        },
+                        block_height: 757660_u32,
+                        block_time: 1665213186_u32,
+                    },
+                },
+            ]
+                .span(),
+            outputs: array![
+                TxOut {
+                    value: 583994_u64,
+                    pk_script: @from_hex("76a91407c3e1c0aefbc8373f56346727bb8d317eb6f43888ac"),
+                    cached: false,
+                },
+                TxOut {
+                    value: 22597480_u64,
+                    pk_script: @from_hex(
+                        "002044709e063fb66d783831a1237a60471d7b2a3de03a41000f4ed9e1d1afa15904"
+                    ),
+                    cached: false,
+                },
+            ]
+                .span(),
+        };
+
+        let mut bytes = Default::default();
+        tx.encode_to(ref bytes);
+
+        let expected = from_hex(
+            "02000000000101badc7cbf55e9f967d16a38605b46e06c66dea5b307f170683984dfb692f490070100000000fdffffff023ae90800000000001976a91407c3e1c0aefbc8373f56346727bb8d317eb6f43888ac68cf58010000000022002044709e063fb66d783831a1237a60471d7b2a3de03a41000f4ed9e1d1afa159040400483045022100b5da1129b825b9656ce00073d54ccb23bc1a5c5ffacf14cbc5aa05cf88fef07f02200e545c3b144eec86b7f296d216eefddf9cdf9ed5bda3c8e0afa03b2a330dacc30147304402202d488b5f90951f372587e4ce66e2369fb2872bc7d6a501ec9d441ef6d58eac5d02203d22d524f5c76cdb2057e1306441f8f7d43a8945326edb327309b03d5632c2d10169522102082e5e469ef875ec63bf52b8471e78367e561a23f39c052488c020f7bd933bd82102eb9e7ad083c76bfb6beb504a67a346c2b0b67075758a70d8f7be868fc731ff17210374f3e239bf6a0b988d6bbd1798fa32829ceec30f4d345b4be172190d9e805ece53ae00000000"
         );
         assert_eq!(bytes, expected);
     }
