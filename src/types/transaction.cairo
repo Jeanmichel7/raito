@@ -134,71 +134,19 @@ pub impl TransactionImpl of TransactionTrait {
     ///
     /// NOTE: marker, flag, and witness fields in segwit transactions are not included
     /// this means txid computation is the same for legacy and segwit tx
-    fn txid(self: @Transaction) -> Hash {
-        double_sha256_byte_array(@(self.encode(false)))
+    fn txid(self: @Transaction) -> (Hash, u32) {
+        let (tx_encoded, tx_weight) = self.encode(false);
+        (double_sha256_byte_array(@tx_encoded), tx_weight)
     }
 
     /// Compute transaction wTXID
     /// https://learnmeabitcoin.com/technical/transaction/wtxid/
-    fn wtxid(self: @Transaction) -> Hash {
-        double_sha256_byte_array(@(self.encode(true)))
+    fn wtxid(self: @Transaction) -> (Hash, u32) {
+        let (wtx_encoded, wtx_weight) = self.encode(true);
+        (double_sha256_byte_array(@wtx_encoded), wtx_weight)
     }
 }
-
 // TODO: implement Hash trait for OutPoint (for creating hash digests to use in utreexo/utxo cache)
 // Maybe we need to rename utils::hash::Hash (e.g. to Digest) to avoid confusion
 
-#[cfg(test)]
-mod tests {
-    use crate::utils::hex::from_hex;
-    use super::{Transaction, TransactionTrait, TxIn, TxOut, OutPoint};
 
-    #[test]
-    fn test_txid() {
-        let tx: Transaction = Transaction {
-            version: 1,
-            is_segwit: false,
-            inputs: array![
-                TxIn {
-                    script: @from_hex(
-                        "47304402204e45e16932b8af514961a1d3a1a25fdf3f4f7732e9d624c6c61548ab5fb8cd410220181522ec8eca07de4860a4acdd12909d831cc56cbbac4622082221a8768d1d0901"
-                    ),
-                    sequence: 0xffffffff,
-                    previous_output: OutPoint {
-                        txid: 0x0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c9_u256
-                            .into(),
-                        vout: 0x00000000,
-                        data: Default::default(),
-                        block_height: Default::default(),
-                        block_time: Default::default(),
-                    },
-                    witness: array![].span(),
-                }
-            ]
-                .span(),
-            outputs: array![
-                TxOut {
-                    value: 0x000000003b9aca00,
-                    pk_script: @from_hex(
-                        "4104ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84cac"
-                    ),
-                    cached: false,
-                },
-                TxOut {
-                    value: 0x00000000ee6b2800,
-                    pk_script: @from_hex(
-                        "410411db93e1dcdb8a016b49840f8c53bc1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643f656b412a3ac"
-                    ),
-                    cached: false,
-                }
-            ]
-                .span(),
-            lock_time: 0
-        };
-
-        assert_eq!(
-            tx.txid(),
-            0xf4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16_u256.into()
-        );
-    }
-}

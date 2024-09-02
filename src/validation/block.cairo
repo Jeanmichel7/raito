@@ -13,6 +13,13 @@ pub fn next_block_height(block_height: Option<u32>) -> u32 {
     }
 }
 
+pub fn validate_weight_block(weight_block: u32) -> Result<(), ByteArray> {
+    if weight_block > 4_000_000 {
+        return Result::Err("Block weight is too high");
+    }
+    Result::Ok(())
+}
+
 /// Validates transactions and aggregates:
 ///  - Total fee
 ///  - TXID merkle root
@@ -23,6 +30,7 @@ pub fn fee_and_merkle_roots(
     let mut txids: Array<Hash> = array![];
     let mut wtxids: Array<Hash> = array![];
     let mut total_fee = 0;
+    let mut txs_weight: u32 = 0;
     let mut i = 0;
 
     let loop_result: Result<(), ByteArray> = loop {
@@ -31,9 +39,15 @@ pub fn fee_and_merkle_roots(
         }
 
         let tx = txs[i];
-        txids.append(tx.txid());
+
+        let (txid, tx_weight) = tx.txid();
+        txids.append(txid);
+        txs_weight += tx_weight;
+
         // TODO: only do that for blocks after Segwit upgrade
-        wtxids.append(tx.wtxid());
+        let (wtxid, wtx_weight) = tx.wtxid();
+        wtxids.append(wtxid);
+        txs_weight += wtx_weight;
 
         // skipping the coinbase transaction
         if (i != 0) {
@@ -46,6 +60,8 @@ pub fn fee_and_merkle_roots(
         i += 1;
     };
     loop_result?;
+
+    validate_weight_block(txs_weight)?;
 
     Result::Ok((total_fee, merkle_root(ref txids), merkle_root(ref wtxids)))
 }
