@@ -134,16 +134,14 @@ pub impl TransactionImpl of TransactionTrait {
     ///
     /// NOTE: marker, flag, and witness fields in segwit transactions are not included
     /// this means txid computation is the same for legacy and segwit tx
-    fn txid(self: @Transaction) -> (Hash, u32) {
-        let (tx_encoded, tx_weight) = self.encode(false);
-        (double_sha256_byte_array(@tx_encoded), tx_weight)
+    fn txid(self: @Transaction) -> Hash {
+        double_sha256_byte_array(@self.encode(false))
     }
 
     /// Compute transaction wTXID
     /// https://learnmeabitcoin.com/technical/transaction/wtxid/
-    fn wtxid(self: @Transaction) -> (Hash, u32) {
-        let (wtx_encoded, wtx_weight) = self.encode(true);
-        (double_sha256_byte_array(@wtx_encoded), wtx_weight)
+    fn wtxid(self: @Transaction) -> Hash {
+        double_sha256_byte_array(@self.encode(true))
     }
 }
 // TODO: implement Hash trait for OutPoint (for creating hash digests to use in utreexo/utxo cache)

@@ -30,7 +30,6 @@ pub fn fee_and_merkle_roots(
     let mut txids: Array<Hash> = array![];
     let mut wtxids: Array<Hash> = array![];
     let mut total_fee = 0;
-    let mut txs_weight: u32 = 0;
     let mut i = 0;
 
     let loop_result: Result<(), ByteArray> = loop {
@@ -39,15 +38,9 @@ pub fn fee_and_merkle_roots(
         }
 
         let tx = txs[i];
-
-        let (txid, tx_weight) = tx.txid();
-        txids.append(txid);
-        txs_weight += tx_weight;
-
+        txids.append(tx.txid());
         // TODO: only do that for blocks after Segwit upgrade
-        let (wtxid, wtx_weight) = tx.wtxid();
-        wtxids.append(wtxid);
-        txs_weight += wtx_weight;
+        wtxids.append(tx.wtxid());
 
         // skipping the coinbase transaction
         if (i != 0) {
@@ -61,7 +54,7 @@ pub fn fee_and_merkle_roots(
     };
     loop_result?;
 
-    validate_weight_block(txs_weight)?;
+    // validate_weight_block(txs_weight)?;
 
     Result::Ok((total_fee, merkle_root(ref txids), merkle_root(ref wtxids)))
 }
