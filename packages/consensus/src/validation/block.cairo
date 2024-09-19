@@ -2,7 +2,9 @@
 use crate::types::utxo_set::{UtxoSet, UtxoSetTrait};
 use crate::types::transaction::{OutPoint, Transaction};
 use crate::codec::{Encode, TransactionCodec};
-use utils::{hash::Digest, merkle_tree::merkle_root, double_sha256::double_sha256_byte_array};
+use utils::{
+    hash::{Digest, DigestTrait}, merkle_tree::merkle_root, double_sha256::double_sha256_byte_array
+};
 use super::transaction::validate_transaction;
 use core::num::traits::zero::Zero;
 
@@ -31,8 +33,12 @@ pub fn validate_block_weight(weight: usize) -> Result<(), ByteArray> {
 pub fn compute_and_validate_tx_data(
     txs: Span<Transaction>, block_height: u32, block_time: u32, ref utxo_set: UtxoSet
 ) -> Result<(u64, Digest, Digest), ByteArray> {
-    let mut txids: Array<Digest> = array![];
-    let mut wtxids: Array<Digest> = array![];
+    // let mut txids: Array<Digest> = array![];
+    // let mut wtxids: Array<Digest> = array![];
+
+    let mut txids: Array<Box<[u32; 8]>> = array![];
+    let mut wtxids: Array<Box<[u32; 8]>> = array![];
+
     let mut total_fee = 0;
     let mut total_weight: u32 = 0;
     let mut inner_result = Result::Ok(());
@@ -58,13 +64,18 @@ pub fn compute_and_validate_tx_data(
             total_weight += 3 * tx_bytes_legacy.len()
                 + tx_bytes_segwit.len(); // Calculate block weight with SegWit
 
-            wtxids.append(wtxid); // Append wtxid to array
+            let [i0, i1, i2, i3, i4, i5, i6, i7] = wtxid.value;
+            wtxids.append(BoxTrait::new([i0, i1, i2, i3, i4, i5, i6, i7]));
+            // wtxids.append(wtxid); // Append wtxid to array
         } else {
             // For blocks before SegWit, only legacy tx weight is considered
             total_weight += 4 * tx_bytes_legacy.len(); // Calculate block weight without SegWit
         }
 
-        txids.append(txid);
+        let [i0, i1, i2, i3, i4, i5, i6, i7] = txid.value;
+        txids.append(BoxTrait::new([i0, i1, i2, i3, i4, i5, i6, i7]));
+
+        // txids.append(txid);
 
         if (is_coinbase) {
             let mut vout = 0;
@@ -96,10 +107,13 @@ pub fn compute_and_validate_tx_data(
     validate_block_weight(total_weight)?;
 
     let wtxid_root = if block_height >= SEGWIT_BLOCK {
-        merkle_root(wtxids.span())
+        DigestTrait::new(merkle_root(ref wtxids).unbox())
+        // merkle_root(wtxids.span())
     } else {
         Zero::zero()
     };
 
-    Result::Ok((total_fee, merkle_root(txids.span()), wtxid_root))
+    let merkle_root: Digest = DigestTrait::new(merkle_root(ref txids).unbox());
+
+    Result::Ok((total_fee, merkle_root, wtxid_root))
 }
