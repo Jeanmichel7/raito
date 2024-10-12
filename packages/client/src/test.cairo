@@ -36,16 +36,20 @@ struct UtreexoArgs {
 /// Panics in case of a validation error or chain state mismatch.
 /// Prints result to the stdout.
 fn test(mut arguments: Span<felt252>) {
+    println!("Starting test, nb: {}", arguments.len());
     let Args { mut chain_state, blocks, expected_chain_state, utreexo_args } = Serde::deserialize(
         ref arguments
     )
         .expect('Failed to deserialize');
+    println!("Deserialized arguments");
 
     let mut utxo_set: UtxoSet = Default::default();
     let mut gas_before = get_available_gas();
 
     for block in blocks {
         let height = chain_state.block_height + 1;
+        println!("height: {}", height);
+
         match chain_state.validate_and_apply(block, ref utxo_set) {
             Result::Ok(new_chain_state) => {
                 chain_state = new_chain_state;

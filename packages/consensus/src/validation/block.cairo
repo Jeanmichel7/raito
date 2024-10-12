@@ -140,7 +140,7 @@ pub fn validate_bip30_block_hash(block_height: u32, block_hash: @Digest,) -> Res
                 0x00000000,
             ]
         );
-        if *block_hash != expected_hash {
+        if *block_hash != 0x271a2dc26e7667f8419f2e15416dc6955e5a6c6cdf3f2574dd08e_u256.into() {
             return Result::Err("Block hash mismatch for BIP-30 exception at height 91722");
         }
         Result::Ok(())

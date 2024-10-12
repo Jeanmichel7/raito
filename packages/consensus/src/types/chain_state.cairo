@@ -62,9 +62,11 @@ pub impl BlockValidatorImpl of BlockValidator {
     ) -> Result<ChainState, ByteArray> {
         let block_height = self.block_height + 1;
 
+        println!("here 1");
         validate_timestamp(self.prev_timestamps, block.header.time)?;
         let prev_block_time = *self.prev_timestamps[self.prev_timestamps.len() - 1];
         let prev_timestamps = next_prev_timestamps(self.prev_timestamps, block.header.time);
+        println!("here 2");
 
         let txid_root = match block.data {
             TransactionData::MerkleRoot(root) => root,
@@ -76,8 +78,10 @@ pub impl BlockValidatorImpl of BlockValidator {
                 txid_root
             }
         };
+        println!("here 3");
 
         block.header.validate_hash(self.best_block_hash, txid_root)?;
+        println!("self.best_block_hash: {}", self.best_block_hash);
 
         let (current_target, epoch_start_time) = adjust_difficulty(
             self.current_target,
@@ -86,11 +90,16 @@ pub impl BlockValidatorImpl of BlockValidator {
             prev_block_time,
             block.header.time
         );
+        println!("here 4");
+
         let total_work = compute_total_work(self.total_work, current_target);
         let best_block_hash = block.header.hash;
 
         validate_proof_of_work(current_target, best_block_hash)?;
         validate_bits(current_target, block.header.bits)?;
+        println!("here 8");
+        println!("block_height: {}", block_height);
+        println!("best_block_hash: {}", best_block_hash);
         validate_bip30_block_hash(block_height, @best_block_hash)?;
 
         Result::Ok(
